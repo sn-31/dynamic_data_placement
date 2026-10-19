@@ -19,6 +19,8 @@ At upload, the system knows the file size but has no access history, so it start
 
 ## Architecture
 
+![System Architecture](img/Dia.jpeg)
+
 ```text
 [ User Upload ] ─► [ Metadata DB ] ─► [ Random Forest ] ─► [ Placement Controller ] ─► [ Storage Nodes ]
                                            ▲                                         │

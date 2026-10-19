@@ -72,7 +72,9 @@ The proposed system consists of the following components:
 6. **Placement Controller:** Recommends storage locations based on predicted popularity and node capacity.
 7. **Web Dashboard:** Displays file information, storage utilization, and placement decisions.
 
- 
+
+![System Architecture](img/Dia.jpeg)
+
 ## Installation and Setup
 
 ### Prerequisites

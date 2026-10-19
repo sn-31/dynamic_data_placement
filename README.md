@@ -49,8 +49,6 @@ dynamic_data_placement/
 │   ├── train_model.py
 │   └── predict.py
 ├── placement/
-│   ├── static_placement.py
-│   ├── heuristic_placement.py
 │   └── placement_controller.py
 ├── services/
 │   ├── file_service.py
@@ -74,6 +72,7 @@ The proposed system consists of the following components:
 6. **Placement Controller:** Recommends storage locations based on predicted popularity and node capacity.
 7. **Web Dashboard:** Displays file information, storage utilization, and placement decisions.
 
+ 
 ## Installation and Setup
 
 ### Prerequisites

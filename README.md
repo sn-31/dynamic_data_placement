@@ -2,176 +2,139 @@
 
 ## Project Overview
 
-This project aims to develop an intelligent data placement system for cloud-based distributed file systems using Machine Learning (ML).
+This project simulates ML-based placement and migration for a tiered distributed file system. A Random Forest Classifier predicts whether a file is `hot`, `warm`, or `cold` and maps that prediction to a storage node.
 
-The system analyzes file access patterns to predict file popularity and recommends suitable storage nodes. The objective is to improve data access performance, utilize storage resources efficiently, and reduce file retrieval latency.
+At upload, the system knows the file size but has no access history, so it starts with a cold-start feature vector. Every read and download is logged. After serving an access, the model re-evaluates the file from its observed history and migrates it when the recommended node changes.
 
-The initial prototype will simulate distributed storage nodes locally and use file access data to develop and evaluate a machine learning-based placement strategy.
+### Key Highlights
 
-## Objectives
+- **ML-Only Placement Flow**: Upload and migration decisions use the Random Forest prediction, with a capacity check before writing or moving files.
+- **Two Separate Views**: Users get a focused upload page (`/upload`); administrators monitor files and storage on `/admin`.
+- **Live Placement Animation**: The Admin Dashboard animates each upload through **User Upload ➔ Metadata ➔ ML Model ➔ Placement Controller ➔ Selected Storage Node**.
+- **Shareable Upload Link**: Copy the user upload URL from the admin dashboard and send it to users on the same reachable host/network.
+- **Server-Sent Events (SSE)**: Instant, zero-polling real-time push telemetry across the local network.
+- **Access Feedback Loop**: Reads and downloads update the access history, trigger inference, and can promote or demote a file automatically.
 
-- Simulate a distributed file system with multiple storage nodes.
-- Implement file upload, storage, and retrieval.
-- Record file access frequency and timestamps.
-- Store file metadata and access logs in PostgreSQL.
-- Train a machine learning model to predict file popularity.
-- Dynamically recommend storage locations based on predicted popularity.
-- Develop a web dashboard to monitor files, storage nodes, and placement decisions.
-- Evaluate performance using metrics such as access latency and storage utilization.
+---
 
-## Technology Stack
+## Architecture
 
-- **Programming Language:** Python
-- **Backend Framework:** Flask
-- **Database:** PostgreSQL
-- **Machine Learning:** Scikit-learn
-- **Data Processing:** Pandas
-- **Model Persistence:** Joblib
-- **Frontend:** HTML, CSS, JavaScript
-- **Version Control:** Git and GitHub
+```text
+[ User Upload ] ─► [ Metadata DB ] ─► [ Random Forest ] ─► [ Placement Controller ] ─► [ Storage Nodes ]
+                                           ▲                                         │
+                                           └──────── [ Access History ] ◄─ [ Read / Download Monitor ]
+```
+
+### Storage Tiers
+
+| Node | Name | Tier | Capacity | Latency | Target Workload |
+|---|---|---|---|---|---|
+| **Node 1** | Hot NVMe SSD | `hot` | 100 MB | ~5 ms | High-frequency streaming, cache, real-time index |
+| **Node 2** | Standard SSD | `warm` | 300 MB | ~25 ms | Balanced working documents, JSON/CSV data |
+| **Node 3** | HDD Archive | `cold` | 1000 MB | ~120 ms | Infrequent backups, ISO images, compressed tarballs |
+
+---
+
+## Machine Learning Pipeline
+
+- **Algorithm**: Scikit-Learn `RandomForestClassifier` (100 estimators, balanced class weights).
+- **Features Extracted**:
+  1. `file_size`: Size in bytes.
+  2. `access_count`: Total lifetime accesses.
+  3. `recent_access_1h`: Accesses in the last 1 hour.
+  4. `recent_access_24h`: Accesses in the last 24 hours.
+  5. `hours_since_last_access`: Elapsed time since previous access.
+  6. `accesses_per_day`: Access velocity over file lifespan.
+- **Bootstrap data**: The model can bootstrap from synthetic access histories with sampled latent popularity classes. Its validation score describes that synthetic dataset and is not a real-world accuracy claim.
+- **Live inference**: Observed reads and downloads are used as model features. They are not assigned training labels by hand; supervised retraining from real data requires ground-truth labels.
+
+---
+
+## Multi-System Setup & Demonstration
+
+### 1. Start the Server
+
+```bash
+source venv/bin/activate
+python app.py
+```
+
+The application runs on `0.0.0.0:5000`.
+
+### 2. Open the Admin Dashboard (System A)
+
+Open in your browser on the host system:
+```text
+http://localhost:5000/
+```
+Or across your local network:
+```text
+http://<HOST_IP>:5000/
+```
+
+### 3. Share the User Upload Page (System B / Phone / Other Browser)
+
+Copy the upload link from the **Share the user upload page** panel on the Admin Dashboard, or open it directly on another laptop or phone connected to the same Wi-Fi/LAN:
+```text
+http://<HOST_IP>:5000/upload
+```
+
+When the dashboard is opened through `localhost`, it detects the host's local network address for the copied link.
+
+### 4. Watch the Real-Time Animation
+
+1. On the **User Upload Page**, choose a file and upload it.
+2. The Admin Dashboard animates that upload through metadata extraction, ML inference, node selection, and storage. The stored file appears in the admin file list.
+3. On the admin dashboard, access or download the file to create access history. The next prediction uses observed access features and may move the file to a different tier.
+
+---
 
 ## Project Structure
 
 ```text
 dynamic_data_placement/
-├── app.py
-├── config.py
-├── requirements.txt
+├── app.py                     # Flask web app & SSE streaming endpoints
+├── config.py                  # Node definitions and configuration
+├── requirements.txt           # Project dependencies
 ├── database/
-│   ├── db.py
-│   └── schema.sql
-├── storage/
-│   ├── node1/
-│   ├── node2/
-│   └── node3/
+│   ├── db.py                  # Database abstraction layer
+│   └── schema.sql             # Relational schema
+├── storage/                   # Simulated physical storage nodes
+│   ├── node1/                 # Hot NVMe tier
+│   ├── node2/                 # Warm SSD tier
+│   └── node3/                 # Cold HDD tier
 ├── ml/
-│   ├── dataset.py
-│   ├── train_model.py
-│   └── predict.py
+│   ├── dataset.py             # Feature engineering & synthetic access-history generator
+│   ├── train_model.py         # Model training script
+│   └── predict.py             # Model inference & prediction cache
 ├── placement/
-│   ├── static_placement.py
-│   ├── heuristic_placement.py
-│   └── placement_controller.py
+│   └── placement_controller.py# ML placement engine & dynamic migration
+├── datapilot-dashboard.html  # Admin dashboard served by Flask at / and /admin
 ├── services/
-│   ├── file_service.py
-│   └── access_logger.py
+│   ├── file_service.py        # File I/O & storage operations
+│   ├── access_logger.py       # Access tracking & latency metrics
+│   └── event_broker.py        # Real-time Server-Sent Events broker
 ├── templates/
-│   └── dashboard.html
+│   └── user.html                # Dedicated user client portal
 └── static/
-    ├── style.css
-    └── script.js
+    ├── datapilot-dashboard.js  # Live data, upload, access, and migration dashboard
+    ├── style.css               # Client portal styling
+    └── user.js                 # User client portal scripts
 ```
 
-## System Architecture
+---
 
-The proposed system consists of the following components:
-
-1. **File Management:** Handles file uploads, storage, and retrieval.
-2. **Storage Nodes:** Simulate multiple storage locations.
-3. **Access Logger:** Records file access events and timestamps.
-4. **Metadata Database:** Maintains file information, node information, and access records.
-5. **ML Prediction Module:** Uses historical access patterns to predict file popularity.
-6. **Placement Controller:** Recommends storage locations based on predicted popularity and node capacity.
-7. **Web Dashboard:** Displays file information, storage utilization, and placement decisions.
-
-## Installation and Setup
-
-### Prerequisites
-
-- Python 3
-- Git
-- Visual Studio Code (recommended)
-- PostgreSQL (for database integration)
-
-### 1. Clone the Repository
+## Running Automated Tests
 
 ```bash
-git clone https://github.com/sn-31/dynamic_data_placement.git
-cd dynamic_data_placement
+python -m unittest discover -s tests -p "test_*.py"
 ```
 
-### 2. Create a Virtual Environment
+---
+
+## Retraining the ML Model
 
 ```bash
-python3 -m venv venv
+python ml/train_model.py
 ```
-
-Activate it on macOS or Linux:
-
-```bash
-source venv/bin/activate
-```
-
-### 3. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Configure the Database
-
-Install and configure PostgreSQL. Update the database connection settings in `config.py` and create the required tables using `database/schema.sql`.
-
-### 5. Run the Application
-
-Once the Flask application has been implemented:
-
-```bash
-python app.py
-```
-
-Open the local URL displayed in the terminal in your browser.
-
-## Machine Learning Approach
-
-The system will use historical file-access data to estimate file popularity.
-
-Potential input features include:
-
-- File access frequency
-- Time since the last access
-- Recent access counts over selected time windows
-- File size
-
-The prediction module will generate a popularity estimate or class. The placement controller will use that prediction, together with storage-node capacity and placement rules, to recommend a suitable node.
-
-Initially, synthetic access data can be used to develop the prototype. A suitable public workload dataset can be incorporated later for more realistic evaluation.
-
-## Performance Evaluation
-
-The prototype can be evaluated using the following metrics:
-
-- File retrieval latency
-- File access response time
-- Storage utilization across nodes
-- Distribution of files among nodes
-- Popularity prediction performance
-- Comparison of static, heuristic, and ML-based placement strategies
-
-Results will be measured during testing rather than assumed in advance.
-
-## Development Phases
-
-- **Phase 1:** Project planning and technology selection.
-- **Phase 2:** Core prototype development, storage simulation, access logging, ML integration, and placement logic.
-- **Phase 3:** System integration, testing, performance evaluation, and documentation.
-
-## Current Development Status
-
-The project repository and initial directory structure have been created. The application, database, prediction model, placement algorithms, and dashboard will be implemented and tested incrementally.
-
-## Future Enhancements
-
-- Integration with real cloud storage services.
-- Evaluation using real-world file-access traces.
-- More advanced popularity prediction models.
-- Automated file migration between storage tiers.
-- Support for additional storage nodes and larger workloads.
-
-## Author
-
-**GitHub:** [sn-31](https://github.com/sn-31)
-
-## License
-
-A license can be added when the project's distribution requirements are decided.
+Or click **"Retrain bootstrap model"** on the Admin Dashboard. The current application has no ground-truth popularity labels for live files, so this button retrains on synthetic access histories.

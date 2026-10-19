@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataPilot | User Upload</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="user-portal-body">
+    <!-- Top Client Header -->
+    <header class="app-header">
+        <div class="header-left">
+            <div class="logo-icon user-icon">👤</div>
+            <div>
+                <h1>DataPilot User Upload</h1>
+                <p class="subtitle">Upload a file and the ML controller will select its storage node.</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <span class="live-indicator"><span class="pulse-dot"></span> Upload service ready</span>
+        </div>
+    </header>
+
+    <main class="dashboard-container user-container">
+        <!-- Toast Notification Container -->
+        <div id="toast-container" class="toast-container"></div>
+
+        <!-- Explain the upload and live admin view -->
+        <div class="multi-system-banner">
+            <div class="banner-icon">🌐</div>
+            <div class="banner-content">
+                <strong>Your file is routed automatically</strong>
+                <p>After upload, the machine-learning model predicts a storage tier and the controller places the file on its selected node. The administrator can watch the upload move through each step live.</p>
+            </div>
+            <div class="banner-tag">Maximum file size: 50 MB</div>
+        </div>
+
+        <div class="user-grid">
+            <!-- Upload Panel -->
+            <section class="user-card upload-section">
+                <div class="card-header">
+                    <h2>📤 Upload File to Distributed Storage</h2>
+                    <span class="badge badge-accent">ML Automated Placement</span>
+                </div>
+
+                <form id="user-upload-form" class="user-form">
+                    <!-- Drag and Drop Dropzone -->
+                    <div id="drop-zone" class="drop-zone">
+                        <div class="drop-zone-icon">📁</div>
+                        <p class="drop-zone-title">Drag & drop your file here, or <span class="browse-link">browse</span></p>
+                        <p class="drop-zone-sub">Supports any format: .txt, .pdf, .bin, .iso, .csv, .zip (up to 50 MB)</p>
+                        <input type="file" id="user-file-input" name="file" class="file-hidden-input" required>
+                        <div id="selected-file-pill" class="selected-file-pill hidden">
+                            <span class="file-pill-icon">📄</span>
+                            <span id="selected-file-name" class="file-pill-name">something.txt</span>
+                            <span id="selected-file-size" class="file-pill-size">0 KB</span>
+                            <button type="button" id="btn-remove-file" class="btn-pill-remove">✕</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-user-upload" class="btn btn-primary btn-block btn-lg">
+                        <span class="btn-text">🚀 Upload file for ML placement</span>
+                    </button>
+                </form>
+
+                <!-- Placement Result Box -->
+                <div id="placement-result-card" class="placement-result-card hidden">
+                    <div class="result-header">
+                        <div class="result-icon-badge" id="result-tier-icon">⚡</div>
+                        <div>
+                            <h3 id="result-title">File Placed Successfully</h3>
+                            <p id="result-filename" class="text-muted">something.txt</p>
+                        </div>
+                        <span id="result-tier-badge" class="badge badge-hot">HOT TIER</span>
+                    </div>
+
+                    <div class="result-metrics-grid">
+                        <div class="result-metric">
+                            <span class="metric-label">Target Storage Node</span>
+                            <span class="metric-val" id="result-node">Node 1: Hot NVMe SSD</span>
+                        </div>
+                        <div class="result-metric">
+                            <span class="metric-label">ML Confidence</span>
+                            <span class="metric-val" id="result-confidence">95%</span>
+                        </div>
+                        <div class="result-metric">
+                            <span class="metric-label">Storage Latency</span>
+                            <span class="metric-val" id="result-latency">~5.0 ms</span>
+                        </div>
+                        <div class="result-metric">
+                            <span class="metric-label">Placement Model</span>
+                            <span class="metric-val">Random Forest</span>
+                        </div>
+                    </div>
+
+                    <!-- ML Probability Breakdown Bars -->
+                    <div class="prob-section">
+                        <span class="prob-title">Class Probability Distribution:</span>
+                        <div class="prob-bar-container">
+                            <div id="prob-bar-hot" class="prob-bar bar-hot" style="width: 33%">Hot</div>
+                            <div id="prob-bar-warm" class="prob-bar bar-warm" style="width: 33%">Warm</div>
+                            <div id="prob-bar-cold" class="prob-bar bar-cold" style="width: 34%">Cold</div>
+                        </div>
+                        <div class="prob-labels">
+                            <span id="prob-label-hot">Hot: 0%</span>
+                            <span id="prob-label-warm">Warm: 0%</span>
+                            <span id="prob-label-cold">Cold: 0%</span>
+                        </div>
+                    </div>
+
+                    <div class="result-reason" id="result-reason">
+                        Placed by ML Random Forest model based on feature vector evaluation.
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="app-footer">
+        <p>DataPilot · User upload portal · Machine-learning storage placement</p>
+    </footer>
+
+    <script src="/static/user.js"></script>
+</body>
+</html>

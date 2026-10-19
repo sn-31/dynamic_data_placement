@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Dynamic Data Placement | Distributed Storage Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-left">
+            <div class="logo-icon">⚡</div>
+            <div>
+                <h1>Dynamic Data Placement Controller</h1>
+                <p class="subtitle">AI-Driven Storage Tiering & Distributed File Placement • Machine Learning Engine</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <span class="live-indicator" id="sse-status-indicator">
+                <span class="pulse-dot active"></span> <span id="sse-status-text">Connecting SSE...</span>
+            </span>
+            <a href="/user" class="btn btn-primary" target="_blank">👤 Open User Portal</a>
+            <button id="btn-seed" class="btn btn-secondary">🌱 Seed Demo Files</button>
+            <button id="btn-train" class="btn btn-secondary">🧠 Retrain ML Model</button>
+            <button id="btn-migrate" class="btn btn-secondary">🔄 Dynamic Migration</button>
+            <button id="btn-benchmark" class="btn btn-accent">⚡ Run Benchmark</button>
+        </div>
+    </header>
+
+    <main class="dashboard-container">
+        <!-- Toast Notification Container -->
+        <div id="toast-container" class="toast-container"></div>
+
+        <!-- Network Multi-System Connectivity Banner -->
+        <div class="network-banner">
+            <div class="network-info">
+                <span class="network-icon">🌐</span>
+                <span class="network-label">Multi-Device Access:</span>
+                <span class="network-url-box">
+                    <span>User Upload Portal on other systems:</span>
+                    <code id="user-portal-url">http://{{ host_ip }}:{{ port }}/user</code>
+                </span>
+            </div>
+            <div class="network-actions">
+                <button id="btn-copy-url" class="btn btn-sm btn-secondary">📋 Copy URL</button>
+                <a href="/user" target="_blank" class="btn btn-sm btn-primary">🔗 Launch Client Tab</a>
+            </div>
+        </div>
+
+        <!-- Real-Time Placement Flow Visualizer (The Star Feature) -->
+        <section class="section flow-section">
+            <div class="flow-card card">
+                <div class="flow-card-header">
+                    <div class="flow-header-title">
+                        <span class="pulse-icon">⚡</span>
+                        <h2>Real-Time Machine Learning Data Placement Flow</h2>
+                        <span class="badge badge-accent">Live Telemetry Pipeline</span>
+                    </div>
+                    <div class="flow-controls">
+                        <button id="btn-replay-flow" class="btn btn-sm btn-secondary" title="Replay the last placement animation">🎬 Replay Animation</button>
+                    </div>
+                </div>
+
+                <!-- Visualizer Interactive Canvas -->
+                <div class="flow-canvas" id="flow-canvas">
+                    <!-- SVG Circuit/Data Highway -->
+                    <svg class="flow-svg-layer" id="flow-svg" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="grad-user-ai" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.9" />
+                                <stop offset="100%" stop-color="#a855f7" stop-opacity="0.9" />
+                            </linearGradient>
+                            <linearGradient id="grad-ai-hot" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#a855f7" stop-opacity="0.9" />
+                                <stop offset="100%" stop-color="#ef4444" stop-opacity="0.9" />
+                            </linearGradient>
+                            <linearGradient id="grad-ai-warm" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#a855f7" stop-opacity="0.9" />
+                                <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.9" />
+                            </linearGradient>
+                            <linearGradient id="grad-ai-cold" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#a855f7" stop-opacity="0.9" />
+                                <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.9" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Paths dynamically rendered / updated via JS -->
+                        <path id="path-user-ai" class="flow-bus bus-base" d="" />
+                        <path id="path-ai-hot" class="flow-bus bus-hot" d="" />
+                        <path id="path-ai-warm" class="flow-bus bus-warm" d="" />
+                        <path id="path-ai-cold" class="flow-bus bus-cold" d="" />
+                    </svg>
+
+                    <!-- Nodes Grid on Canvas -->
+                    <div class="flow-nodes-container">
+                        <!-- Stage 1: User Client -->
+                        <div class="flow-stage-col col-client">
+                            <div class="flow-node flow-node-client" id="node-viz-client">
+                                <div class="node-icon-circle client-icon">👤</div>
+                                <div class="node-details">
+                                    <span class="stage-tag">Stage 1</span>
+                                    <h4>User Client</h4>
+                                    <span class="node-sub" id="viz-client-ip">Remote Device / Web Client</span>
+                                    <span class="node-status-pill">Ready to Send</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stage 2: AI ML Classifier Engine -->
+                        <div class="flow-stage-col col-ai">
+                            <div class="flow-node flow-node-ai" id="node-viz-ai">
+                                <div class="node-icon-circle ai-icon">🧠</div>
+                                <div class="node-details">
+                                    <span class="stage-tag">Stage 2</span>
+                                    <h4>AI Placement Controller</h4>
+                                    <span class="node-sub">Random Forest Classifier (6 Features)</span>
+                                    <div class="ai-status-row">
+                                        <span class="ai-pulse-radar"></span>
+                                        <span id="viz-ai-status">Inference Engine Active</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stage 3: Target Storage Tiers -->
+                        <div class="flow-stage-col col-storage">
+                            <!-- Hot Tier -->
+                            <div class="flow-node flow-tier-node tier-hot" id="node-viz-node1">
+                                <div class="tier-indicator">🔥</div>
+                                <div class="tier-info">
+                                    <h5>Node 1: Hot Tier</h5>
+                                    <span class="tier-type">NVMe SSD • Latency: ~5 ms</span>
+                                    <div class="tier-bar-mini"><div class="mini-bar-fill fill-hot" id="viz-bar-node1" style="width: 20%"></div></div>
+                                </div>
+                            </div>
+
+                            <!-- Warm Tier -->
+                            <div class="flow-node flow-tier-node tier-warm" id="node-viz-node2">
+                                <div class="tier-indicator">⚡</div>
+                                <div class="tier-info">
+                                    <h5>Node 2: Warm Tier</h5>
+                                    <span class="tier-type">Standard SSD • Latency: ~25 ms</span>
+                                    <div class="tier-bar-mini"><div class="mini-bar-fill fill-warm" id="viz-bar-node2" style="width: 20%"></div></div>
+                                </div>
+                            </div>
+
+                            <!-- Cold Tier -->
+                            <div class="flow-node flow-tier-node tier-cold" id="node-viz-node3">
+                                <div class="tier-indicator">❄️</div>
+                                <div class="tier-info">
+                                    <h5>Node 3: Cold Tier</h5>
+                                    <span class="tier-type">HDD Archive • Latency: ~120 ms</span>
+                                    <div class="tier-bar-mini"><div class="mini-bar-fill fill-cold" id="viz-bar-node3" style="width: 20%"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Floating Animated Data Packet Container -->
+                    <div id="packet-container" class="packet-container"></div>
+                </div>
+
+                <!-- Live ML Decision Telemetry HUD -->
+                <div class="telemetry-hud" id="telemetry-hud">
+                    <div class="hud-item hud-file">
+                        <span class="hud-label">Current / Last File:</span>
+                        <span class="hud-val" id="hud-filename">Waiting for live file upload...</span>
+                    </div>
+                    <div class="hud-item hud-tier">
+                        <span class="hud-label">Predicted Tier:</span>
+                        <span class="hud-val" id="hud-tier-val"><span class="badge badge-secondary">Idle</span></span>
+                    </div>
+                    <div class="hud-item hud-target">
+                        <span class="hud-label">Assigned Node:</span>
+                        <span class="hud-val" id="hud-target-val">-</span>
+                    </div>
+                    <div class="hud-item hud-confidence">
+                        <span class="hud-label">ML Confidence:</span>
+                        <span class="hud-val" id="hud-conf-val">-</span>
+                    </div>
+                    <div class="hud-item hud-prob">
+                        <span class="hud-label">Model Probabilities:</span>
+                        <span class="hud-val hud-prob-text" id="hud-prob-val">Hot: - | Warm: - | Cold: -</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Summary Metrics -->
+        <section class="summary-cards">
+            <div class="card metric-card">
+                <span class="metric-title">Total Stored Files</span>
+                <span class="metric-value" id="metric-total-files">0</span>
+                <span class="metric-sub" id="metric-total-size">0 MB total</span>
+            </div>
+            <div class="card metric-card">
+                <span class="metric-title">Total Access Requests</span>
+                <span class="metric-value" id="metric-total-accesses">0</span>
+                <span class="metric-sub">Logged access events</span>
+            </div>
+            <div class="card metric-card">
+                <span class="metric-title">Average Access Latency</span>
+                <span class="metric-value" id="metric-avg-latency">0.0 ms</span>
+                <span class="metric-sub">Across all storage nodes</span>
+            </div>
+            <div class="card metric-card">
+                <span class="metric-title">Placement Engine</span>
+                <span class="metric-value text-accent">ML Only</span>
+                <span class="metric-sub">Random Forest Classifier (100 Trees)</span>
+            </div>
+        </section>
+
+        <!-- Storage Nodes Overview -->
+        <section class="section">
+            <h2 class="section-title">Distributed Storage Nodes</h2>
+            <div class="nodes-grid" id="nodes-grid">
+                <!-- Dynamically rendered by JS -->
+            </div>
+        </section>
+
+        <!-- Analytics and Charts -->
+        <section class="section grid-two-col">
+            <div class="card chart-card">
+                <h3>Storage Distribution (MB)</h3>
+                <div class="chart-wrapper">
+                    <canvas id="chart-storage"></canvas>
+                </div>
+            </div>
+            <div class="card chart-card">
+                <h3>Access Latency by Storage Tier</h3>
+                <div class="chart-wrapper">
+                    <canvas id="chart-latency"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Admin Direct Upload (Machine Learning Placement) -->
+        <section class="section">
+            <div class="card upload-card">
+                <div class="card-header">
+                    <h3>⚡ Admin Direct Upload</h3>
+                    <span class="badge badge-accent">100% Machine Learning Placement</span>
+                </div>
+                <form id="upload-form" class="upload-form">
+                    <div class="form-group">
+                        <label for="file-input">Select File</label>
+                        <input type="file" id="file-input" name="file" required>
+                    </div>
+                    <div class="form-group submit-group">
+                        <button type="submit" class="btn btn-primary" id="btn-upload">Upload & Place via ML</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- File Inventory Table -->
+        <section class="section">
+            <div class="card table-card">
+                <div class="table-header">
+                    <h3>Stored Files Inventory</h3>
+                    <button class="btn btn-sm btn-secondary" id="btn-refresh">🔄 Refresh</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>File Name</th>
+                                <th>Size</th>
+                                <th>Node & Tier</th>
+                                <th>Total Accesses</th>
+                                <th>Avg Latency</th>
+                                <th>Predicted Popularity</th>
+                                <th>Placement Engine</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="files-tbody">
+                            <tr><td colspan="8" class="text-center">Loading files...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Access Logs -->
+        <section class="section">
+            <div class="card table-card">
+                <div class="table-header">
+                    <h3>Recent File Access Logs (Live Stream)</h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table logs-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>File Name</th>
+                                <th>Storage Node</th>
+                                <th>Node Tier</th>
+                                <th>Response Latency</th>
+                                <th>Operation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logs-tbody">
+                            <tr><td colspan="6" class="text-center">No access logs yet.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <p>AI-Driven Dynamic Data Placement System • Distributed Cloud Storage Simulation • Machine Learning Model</p>
+    </footer>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
